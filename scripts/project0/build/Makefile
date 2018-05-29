@@ -106,7 +106,7 @@ TARGET_CC := $(TARGET_CC_PREFIX)gcc
 HOST_CC := gcc
 
 # Target linker.  GNU ld is probably to only one that will work.
-TARGET_LD := $(TARGET_CC_PREFIX)ld
+TARGET_LD := $(TARGET_CC_PREFIX)ld -m elf_i386
 
 # Target archiver
 TARGET_AR := $(TARGET_CC_PREFIX)ar
@@ -145,14 +145,14 @@ NUMSECS := $(PERL) $(PROJECT_ROOT)/scripts/numsecs
 # ----------------------------------------------------------------------
 
 # Flags used for all C source files
-GENERAL_OPTS := -O -Wall $(EXTRA_C_OPTS) -fno-stack-protector
-CC_GENERAL_OPTS := $(GENERAL_OPTS)
+GENERAL_OPTS := -O -Wall $(EXTRA_C_OPTS)
+CC_GENERAL_OPTS := $(GENERAL_OPTS) -m32 -fno-stack-protector #-Werror  
 
 # Flags used for kernel C source files
 CC_KERNEL_OPTS := -g -DGEEKOS -I$(PROJECT_ROOT)/include
 
 # Flags user for kernel assembly files
-NASM_KERNEL_OPTS := -I$(PROJECT_ROOT)/src/geekos/ -f elf64 $(EXTRA_NASM_OPTS)
+NASM_KERNEL_OPTS := -I$(PROJECT_ROOT)/src/geekos/ -f elf $(EXTRA_NASM_OPTS)
 
 # Flags used for common library and libc source files
 CC_USER_OPTS := -I$(PROJECT_ROOT)/include -I$(PROJECT_ROOT)/include/libc \

@@ -2,3 +2,4 @@
 *.img
 *.bin
 *.exe
+scripts/project0/build/bochs.out
