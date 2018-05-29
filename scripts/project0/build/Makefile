@@ -121,7 +121,7 @@ TARGET_NM := $(TARGET_CC_PREFIX)nm
 TARGET_OBJCOPY := $(TARGET_CC_PREFIX)objcopy
 
 # Nasm (http://nasm.sourceforge.net)
-NASM := nasm
+NASM := nasm2
 
 # Tool to build PFAT filesystem images.
 BUILDFAT := tools/builtFat.exe
