@@ -8,3 +8,5 @@
     * 提示架构问题，在编译选项中将elf修改为elf64，使用make clean之后再make
 # 调试
 1. 在project0的build目录中修改.bochsrc文件，修改成功后，使用bochs命令打开虚拟机，看到七个选项，第六个为启动，输入6,回车启动
+2. 在 .bochsrc 默认设置启动日志文件是 bochs.out
+3. 启动后，在控制台输入 c(意为continue) ，回车，在虚拟机中出现提示为cant read boot disk

@@ -1,10 +1,8 @@
 # An example .bochsrc file.
 
 # You will need to edit these lines to reflect your system.
-vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
-#romimage: file=/usr/share/bochs/BIOS-bochs-latest, address=0xf0000
-romimage: file=/usr/share/bochs/BIOS-bochs-latest 
-#romimage:file=$BXSHARE/BIOS-bochs-latest
+#vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
+romimage: file=/usr/share/bochs/BIOS-bochs-latest, address=0xf0000
 
 megs: 8
 boot: a
