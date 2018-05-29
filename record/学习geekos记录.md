@@ -6,4 +6,5 @@
     * 编译后很多错误,原因编译选项使用了-Werror选项，将警告当作了error，在makefile中找到 -Werror 删掉
     * 提示__stack__chk_fail 未定义的引用,解法是在编译选项里加上-fno-stack-protector选项,使用make clean之后再make
     * 提示架构问题，在编译选项中将elf修改为elf64，使用make clean之后再make
-4. 
+# 调试
+1. 在project0的build目录中修改.bochsrc文件，修改成功后，使用bochs命令打开虚拟机，看到七个选项，第六个为启动，输入6,回车启动
