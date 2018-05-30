@@ -2,6 +2,5 @@
 *.img
 *.bin
 *.exe
-scripts/project0/build/bochs.out
+*bochs.out
 .vscode/settings.json
-scripts/project0/build/bochs.out
