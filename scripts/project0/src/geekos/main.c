@@ -22,6 +22,10 @@
 #include <geekos/keyboard.h>
 
 
+/*
+ * My thread statement
+ */
+void My_Thread(ulong_t arg);
 
 
 /*
@@ -48,7 +52,8 @@ void Main(struct Boot_Info* bootInfo)
     Set_Current_Attr(ATTRIB(BLACK, GRAY));
 
 
-    TODO("Start a kernel thread to echo pressed keys and print counts");
+    /*TODO("Start a kernel thread to echo pressed keys and print counts");*/
+    Start_Kernel_Thread(My_Thread, 157, PRIORITY_NORMAL, false);
 
 
 
@@ -59,8 +64,16 @@ void Main(struct Boot_Info* bootInfo)
 
 
 
-
-
+/*
+ * My thread implemention
+ */
+void My_Thread(ulong_t atg){
+    Print("Hello from penguinang!!!\n");
+    Print("Chinese is 杨蓬博\n");
+    /*while(1){*/
+        
+    /*}*/
+}
 
 
 
