@@ -21,3 +21,4 @@
     * ~~修改之前改的`elf64` 回`elf`~~
     * ~~编译之后，只有58K，运行之后，发现应该是成功载入了，可以显示内存大小和分页情况，但是还有一点小问题~~
 6. 上一步之后，启动显示`failed assertion in init_idt :g_handlersizenoterr == g_handlersizeerr`,了解之后是`nasm`汇编编译器的版本问题，需要更早的版本如[`2.08.02`](!https://www.nasm.us/pub/nasm/releasebuilds/2.08.02/nasm-2.08.02.tar.gz),下载之后，解压，在目录内运行 `./configure` 脚本，生成`Makefile`,然后编译，生成目标`nasm`,之后使用自己编译的`nasm`编译OS。可以使用软链接，`sudo ln -s [path-to-nasm]/nasm /usr/local/bin/nasm2`,然后在`project0`的`makefile`里面修改`NASM`的值为`nasm2`; 或者不使用软链接，直接将`makefile`里面的`NASM`值改为绝对路径。`make clean`之后再编译,启动`bochs`成功打印出`Welcome to GeekOs`
+7. 在`src/geekos/main.c`中写自己的代码，如打印输出等，编译查看结果

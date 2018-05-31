@@ -4,4 +4,4 @@
 *.exe
 *bochs.out
 *ycm_extra_conf*
-.vscode/settings.json
+*.vscode*
