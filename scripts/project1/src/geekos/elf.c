@@ -53,7 +53,7 @@ int Parse_ELF_Executable(char *exeFileData, ulong_t exeFileLength,
     /**
      * Num of segments
      */
-    // elf_header.phnum = 0;
+    elf_header.phnum = 1;
     exeFormat->numSegments = elf_header.phnum;
 
     /**
@@ -66,7 +66,6 @@ int Parse_ELF_Executable(char *exeFileData, ulong_t exeFileLength,
      */
     ulong_t header_start = elf_header.phoff;
     ulong_t ph_size = elf_header.phentsize;
-    // for(int i = 0; i<3; i++){
     for(int i = 0; i<elf_header.phnum; i++){
         programHeader p_header;
         memcpy(&p_header, exeFileData+header_start, ph_size);
