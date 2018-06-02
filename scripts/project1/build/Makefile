@@ -132,7 +132,7 @@ TARGET_CC := $(TARGET_CC_PREFIX)gcc
 HOST_CC := gcc
 
 # Target linker.  GNU ld is probably to only one that will work.
-TARGET_LD := $(TARGET_CC_PREFIX)ld
+TARGET_LD := $(TARGET_CC_PREFIX)ld -m elf_i386
 
 # Target archiver
 TARGET_AR := $(TARGET_CC_PREFIX)ar
@@ -147,7 +147,7 @@ TARGET_NM := $(TARGET_CC_PREFIX)nm
 TARGET_OBJCOPY := $(TARGET_CC_PREFIX)objcopy
 
 # Nasm (http://nasm.sourceforge.net)
-NASM := nasm
+NASM := nasm2
 
 # Tool to build PFAT filesystem images.
 BUILDFAT := tools/builtFat.exe
@@ -175,7 +175,7 @@ GENERRS := $(PERL) $(PROJECT_ROOT)/scripts/generrs
 
 # Flags used for all C source files
 GENERAL_OPTS := -O -Wall $(EXTRA_C_OPTS)
-CC_GENERAL_OPTS := $(GENERAL_OPTS) -Werror 
+CC_GENERAL_OPTS := $(GENERAL_OPTS) -fno-stack-protector -m32 
 
 # Flags used for kernel C source files
 CC_KERNEL_OPTS := -g -DGEEKOS -I$(PROJECT_ROOT)/include

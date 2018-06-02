@@ -30,6 +30,55 @@
 int Parse_ELF_Executable(char *exeFileData, ulong_t exeFileLength,
     struct Exe_Format *exeFormat)
 {
-    TODO("Parse an ELF executable image");
-}
+    // Print("This is elf header content\n");
+    // for(int i = 0; i<0x34+0x20*3+1; i++){
+    //     if(i%16 == 0){
+    //         Print("\n");
+    //         Print("%04x   ", i);
+    //     }
 
+    //     Print(" ");
+    //     Print("%02hhx",exeFileData[i]);
+    //     if(i%16 == 7)
+    //         Print("\t");
+    // }
+    // Print("\n");
+
+    /**
+     * Elf header
+     */
+    elfHeader elf_header;
+    memcpy(&elf_header, exeFileData, sizeof(elfHeader));
+    
+    /**
+     * Num of segments
+     */
+    // elf_header.phnum = 0;
+    exeFormat->numSegments = elf_header.phnum;
+
+    /**
+     * Entry addr
+     */
+    exeFormat->entryAddr = elf_header.entry;
+
+    /**
+     * Read segment  
+     */
+    ulong_t header_start = elf_header.phoff;
+    ulong_t ph_size = elf_header.phentsize;
+    // for(int i = 0; i<3; i++){
+    for(int i = 0; i<elf_header.phnum; i++){
+        programHeader p_header;
+        memcpy(&p_header, exeFileData+header_start, ph_size);
+        struct Exe_Segment segment = {
+            p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags | PF_X
+        };
+        // Print("segment %d type is %08x\n", i, p_header.type);
+        // Print("Read segment data ,offset %d, fileSize %d, vaddr %d, memSize %d, flags %d\n", 
+            // p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags);
+        exeFormat->segmentList[i] = segment;
+        header_start += ph_size;
+    }
+    // TODO("Wait\n");
+    return 0;
+}

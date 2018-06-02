@@ -5,3 +5,4 @@
 *bochs.out
 *ycm_extra_conf*
 *.vscode*
+scripts/project1/build/libc/libc.a

@@ -27,7 +27,7 @@ static void Printrap_Handler(struct Interrupt_State* state);
 
 static void * virtSpace;
 
-static int lprogdebug = 0;
+static int lprogdebug = 1;
 
 /* 
  * Spawn_Program() sets up the memory space, and kickstarts the program
