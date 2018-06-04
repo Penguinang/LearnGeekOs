@@ -17,6 +17,8 @@
 #include <geekos/string.h>
 #include <geekos/elf.h>
 
+#include <geekos/keyboard.h>
+
 
 /**
  * From the data of an ELF executable, determine how its segments
@@ -53,7 +55,7 @@ int Parse_ELF_Executable(char *exeFileData, ulong_t exeFileLength,
     /**
      * Num of segments
      */
-    elf_header.phnum = 1;
+    // elf_header.phnum = 1;
     exeFormat->numSegments = elf_header.phnum;
 
     /**
@@ -72,12 +74,13 @@ int Parse_ELF_Executable(char *exeFileData, ulong_t exeFileLength,
         struct Exe_Segment segment = {
             p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags | PF_X
         };
-        // Print("segment %d type is %08x\n", i, p_header.type);
-        // Print("Read segment data ,offset %d, fileSize %d, vaddr %d, memSize %d, flags %d\n", 
-            // p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags);
+        Print("segment %d type is %08x\n", i, p_header.type);
+        Print("Read segment data ,offset %d, fileSize %d, vaddr %d, memSize %d, flags %d\n", 
+            p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags);
         exeFormat->segmentList[i] = segment;
         header_start += ph_size;
     }
+    // Wait_For_Key();
     // TODO("Wait\n");
     return 0;
 }
