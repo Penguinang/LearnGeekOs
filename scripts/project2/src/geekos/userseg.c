@@ -128,14 +128,14 @@ int Load_User_Program(char *exeFileData, ulong_t exeFileLength,
     }
     KASSERT(maxva != 0);
     
-    int arg_num;
+    unsigned int arg_num;
     ulong_t arg_block_size;
     Get_Argument_Block_Size(command, &arg_num, &arg_block_size);
 
     ulong_t stack_size = DEFAULT_USER_STACK_SIZE;
 
     ulong_t virt_size = maxva + arg_block_size + stack_size;
-    ulong_t virt_space = Malloc(virt_size);
+    ulong_t virt_space = (ulong_t)Malloc(virt_size);
     KASSERT(virt_space != 0);
     ulong_t arg_block_addr = virt_space + maxva;
     ulong_t stack_addr = arg_block_addr + arg_block_size;
@@ -143,16 +143,16 @@ int Load_User_Program(char *exeFileData, ulong_t exeFileLength,
     /* Load segment into memory */
     for(int i = 0; i<exeFormat->numSegments; i++){
         struct Exe_Segment *segment = &exeFormat->segmentList[i];
-        memcpy(virt_space+segment->startAddress, exeFileData+segment->offsetInFile, segment->lengthInFile);
+        memcpy((void*)(virt_space+segment->startAddress), exeFileData+segment->offsetInFile, segment->lengthInFile);
     }
-    (*pUserContext)->memory = virt_space;
+    (*pUserContext)->memory = (char*)virt_space;
     (*pUserContext)->size = virt_size;
     
     /* LDT */
     struct Segment_Descriptor *ldt_addr = (*pUserContext)->ldt;
     struct Segment_Descriptor *ldtDescriptor = Allocate_Segment_Descriptor();
     (*pUserContext)->ldtDescriptor = ldtDescriptor;
-    Init_Code_Segment_Descriptor(ldtDescriptor, ldt_addr, (virt_size/PAGE_SIZE)+10, 3);
+    Init_LDT_Descriptor(ldtDescriptor, ldt_addr, NUM_USER_LDT_ENTRIES);
     (*pUserContext)->ldtSelector = Selector(3, true, Get_Descriptor_Index(ldtDescriptor));
 
     Init_Code_Segment_Descriptor(ldt_addr, virt_space, (maxva/PAGE_SIZE)+10, 3);
@@ -162,7 +162,7 @@ int Load_User_Program(char *exeFileData, ulong_t exeFileLength,
 
     /* Addresses */
     (*pUserContext)->entryAddr = exeFormat->entryAddr;
-    Format_Argument_Block(arg_block_addr, arg_num, virt_space, command);
+    Format_Argument_Block((char*)arg_block_addr, arg_num, virt_space, command);
     (*pUserContext)->argBlockAddr = arg_block_addr;
     (*pUserContext)->stackPointerAddr = stack_addr;
 

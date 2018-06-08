@@ -317,26 +317,31 @@ static void Setup_Kernel_Thread(
      */
     /* Attach user context */
     Attach_User_Context(kthread, userContext);
-
     /* Make stack like exit from a interrupt */
+    Push(kthread, userContext->argBlockAddr);
     Push(kthread, userContext->dsSelector);
     Push(kthread, userContext->stackPointerAddr);
+    Print("ds: %08x, stackPointer: %08x\n", userContext->dsSelector, userContext->stackPointerAddr);
     Push(kthread, EFLAGS_IF);
     Push(kthread, userContext->csSelector);
     Push(kthread, userContext->entryAddr);
+    // fake Error code and interrupt number
     Push(kthread, 0);
     Push(kthread, 0);
     // 通用寄存器
     // 不知道按照什么顺序，于是按照Pusha指令的默认顺序，即
-    // EAX, ECX, EDX, EBX, EBP, ESP, EBP, ESI, and EDI
-    Push(kthread, 0);
-    Push(kthread, 0);
-    Push(kthread, 0);
-    Push(kthread, 0);
-    Push(kthread, 0);
-    Push(kthread, 0);
+    // EAX, ECX, EDX, EBX, ESP, EBP, ESI, and EDI    
+    // 经调试后发现，CPU取堆栈数据时是按照字母序倒序取的，所以对应压栈顺序应为
+    // ax, bx, cx, dx, si, di, bp, 其中sp虽然是通用寄存器，但是不需要压栈，否则
+    // 其他寄存器的值会错乱
+    Push(kthread, 0xa);
+    Push(kthread, 0xb);
+    Push(kthread, 0xc);
+    Push(kthread, 0xd);
     Push(kthread, userContext->argBlockAddr);        
-    Push(kthread, 0);
+    Push(kthread, 0xd1);
+    Push(kthread, 0xb0);
+    // 按照原来的顺序压栈时，发现有错误，debugger 显示多了一格（从栈顶开始），原来是不需要sp的值
 
     Push(kthread, userContext->dsSelector);
     Push(kthread, userContext->dsSelector);
@@ -548,12 +553,9 @@ Start_User_Thread(struct User_Context* userContext, bool detached)
     
     struct Kernel_Thread *thread = Create_Thread(PRIORITY_NORMAL, detached);
     KASSERT(thread != 0);
-    // Print("Create user thread %0lx\n", thread);
-    // Print("cs: %0lx, index=%d, ti=%d, rpl=%d\n",
-    //     userContext->csSelector ,userContext->csSelector >> 3, (userContext->csSelector >> 2) & 1, userContext->csSelector & 3);
     Setup_User_Thread(thread, userContext);
     Make_Runnable_Atomic(thread);
-    // TODO("Start user thread");
+    return thread;
 }
 
 /*

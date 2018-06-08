@@ -29,7 +29,6 @@
  */
 void Attach_User_Context(struct Kernel_Thread* kthread, struct User_Context* context)
 {
-    KASSERT(context != 0);
     kthread->userContext = context;
 
     Disable_Interrupts();
@@ -105,19 +104,22 @@ int Spawn(const char *program, const char *command, struct Kernel_Thread **pThre
      */
     char *buffer;
     ulong_t len;
-    Read_Fully(program, &buffer, &len);
+    int read = Read_Fully(program, (void**)&buffer, &len);
+    KASSERT(read == 0);
 
     /**
      * Parse
      */
     struct Exe_Format exe_format;
-    Parse_ELF_Executable(buffer, len, &exe_format);
+    int parse = Parse_ELF_Executable(buffer, len, &exe_format);
+    KASSERT(parse == 0);
 
     /**
      * Load
      */
     struct User_Context *user_context;
-    Load_User_Program(buffer, len, &exe_format, command, &user_context);
+    int load = Load_User_Program(buffer, len, &exe_format, command, &user_context);
+    KASSERT(load == 0);
 
     /**
      * Start
