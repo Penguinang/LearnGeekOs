@@ -317,8 +317,8 @@ static void Setup_Kernel_Thread(
      */
     /* Attach user context */
     Attach_User_Context(kthread, userContext);
+
     /* Make stack like exit from a interrupt */
-    Push(kthread, userContext->argBlockAddr);
     Push(kthread, userContext->dsSelector);
     Push(kthread, userContext->stackPointerAddr);
     Print("ds: %08x, stackPointer: %08x\n", userContext->dsSelector, userContext->stackPointerAddr);
@@ -334,6 +334,7 @@ static void Setup_Kernel_Thread(
     // 经调试后发现，CPU取堆栈数据时是按照字母序倒序取的，所以对应压栈顺序应为
     // ax, bx, cx, dx, si, di, bp, 其中sp虽然是通用寄存器，但是不需要压栈，否则
     // 其他寄存器的值会错乱
+    // 修正：具体的寄存器顺序可以在lowlevel.asm 中找到
     Push(kthread, 0xa);
     Push(kthread, 0xb);
     Push(kthread, 0xc);

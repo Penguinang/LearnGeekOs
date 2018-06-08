@@ -11,3 +11,15 @@
 *build/snapshot.txt
 *project*/project*.md
 scripts/project*/project*.md
+*zerofile
+*eipToFunction
+*findaddr
+*generrs
+*kerninfo
+*mkcdisk
+*mkuprog
+*numsecs
+*pad
+*pcat
+*pw
+*scan
