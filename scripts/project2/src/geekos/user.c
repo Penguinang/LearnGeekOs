@@ -98,6 +98,7 @@ int Spawn(const char *program, const char *command, struct Kernel_Thread **pThre
      * If all goes well, store the pointer to the new thread in
      * pThread and return 0.  Otherwise, return an error code.
      */
+    // TODO("Spawn a process by reading an executable from a filesystem");
 
     /**
      * Read
@@ -123,7 +124,6 @@ int Spawn(const char *program, const char *command, struct Kernel_Thread **pThre
      */
     *pThread = Start_User_Thread(user_context, true);
     return (*pThread)->pid;
-    TODO("Spawn a process by reading an executable from a filesystem");
 }
 
 /*
@@ -142,6 +142,11 @@ void Switch_To_User_Context(struct Kernel_Thread* kthread, struct Interrupt_Stat
      * the Set_Kernel_Stack_Pointer() and Switch_To_Address_Space()
      * functions.
      */
-    TODO("Switch to a new user address space, if necessary");
+    // TODO("Switch to a new user address space, if necessary");
+    
+    KASSERT(kthread != 0);
+    Set_Kernel_Stack_Pointer(kthread->esp);
+    if(kthread->userContext != NULL)
+        Switch_To_Address_Space(kthread->userContext);
 }
 

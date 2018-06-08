@@ -17,6 +17,8 @@
 #include <geekos/kthread.h>
 #include <geekos/malloc.h>
 
+#include <geekos/user.h>
+
 
 /* ----------------------------------------------------------------------
  * Private data
@@ -313,7 +315,35 @@ static void Setup_Kernel_Thread(
      * - The esi register should contain the address of
      *   the argument block
      */
-    TODO("Create a new thread to execute in user mode");
+    /* Attach user context */
+    Attach_User_Context(kthread, userContext);
+
+    /* Make stack like exit from a interrupt */
+    Push(kthread, userContext->dsSelector);
+    Push(kthread, userContext->stackPointerAddr);
+    Push(kthread, EFLAGS_IF);
+    Push(kthread, userContext->csSelector);
+    Push(kthread, userContext->entryAddr);
+    Push(kthread, 0);
+    Push(kthread, 0);
+    // 通用寄存器
+    // 不知道按照什么顺序，于是按照Pusha指令的默认顺序，即
+    // EAX, ECX, EDX, EBX, EBP, ESP, EBP, ESI, and EDI
+    Push(kthread, 0);
+    Push(kthread, 0);
+    Push(kthread, 0);
+    Push(kthread, 0);
+    Push(kthread, 0);
+    Push(kthread, 0);
+    Push(kthread, userContext->argBlockAddr);        
+    Push(kthread, 0);
+
+    Push(kthread, userContext->dsSelector);
+    Push(kthread, userContext->dsSelector);
+    Push(kthread, userContext->dsSelector);
+    Push(kthread, userContext->dsSelector);
+
+    // TODO("Create a new thread to execute in user mode");
 }
 
 
@@ -515,7 +545,15 @@ Start_User_Thread(struct User_Context* userContext, bool detached)
      * - Call Make_Runnable_Atomic() to schedule the process
      *   for execution
      */
-    TODO("Start user thread");
+    
+    struct Kernel_Thread *thread = Create_Thread(PRIORITY_NORMAL, detached);
+    KASSERT(thread != 0);
+    // Print("Create user thread %0lx\n", thread);
+    // Print("cs: %0lx, index=%d, ti=%d, rpl=%d\n",
+    //     userContext->csSelector ,userContext->csSelector >> 3, (userContext->csSelector >> 2) & 1, userContext->csSelector & 3);
+    Setup_User_Thread(thread, userContext);
+    Make_Runnable_Atomic(thread);
+    // TODO("Start user thread");
 }
 
 /*

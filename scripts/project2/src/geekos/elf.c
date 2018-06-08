@@ -73,13 +73,13 @@ int Parse_ELF_Executable(char *exeFileData, ulong_t exeFileLength,
         programHeader p_header;
         memcpy(&p_header, exeFileData+header_start, ph_size);
         struct Exe_Segment segment = {
-            p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags | PF_X
+            p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags
         };
-        Print("segment %d type is %08x\n", i, p_header.type);
-        Print("Read segment data ,offset %d, fileSize %d, vaddr %d, memSize %d, flags %d\n", 
-            p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags);
         exeFormat->segmentList[i] = segment;
         header_start += ph_size;
+        // Print("segment %d type is %08x\n", i, p_header.type);
+        // Print("Read segment data ,offset %d, fileSize %d, vaddr %d, memSize %d, flags %d\n", 
+        //     p_header.offset, p_header.fileSize, p_header.vaddr, p_header.memSize, p_header.flags);
     }
     // Wait_For_Key();
     // TODO("Wait\n");
