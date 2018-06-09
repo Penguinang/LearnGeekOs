@@ -165,6 +165,13 @@ int Load_User_Program(char *exeFileData, ulong_t exeFileLength,
     Init_Data_Segment_Descriptor(ldt_addr+1, virt_space, (virt_size/PAGE_SIZE), 3);
     (*pUserContext)->dsSelector = Selector(3, false, 1);
 
+    // TODO
+    // 1. 从逻辑地址映射到线性地址还没有完成，因此拷贝函数没有完成
+    // 2. 下面第二行的Print函数两个数值输出本应相等却不想等
+    struct Segment_Descriptor *dscp = ldt_addr + 1;
+    // Print("virt space %0lx, addrH %0lx, addrL %0lx\n", virt_space, dscp->baseHigh, dscp->baseLow);
+    // Print("Original base addr %08x, original dscp %016x, in dscp %0lx\n", 
+    //     virt_space, *(unsigned long long*)(dscp), dscp->baseLow);
     /* Addresses */
     (*pUserContext)->entryAddr = exeFormat->entryAddr;
     Format_Argument_Block((char*)arg_block_addr, arg_num, maxva + stack_size, command);
@@ -200,8 +207,13 @@ bool Copy_From_User(void* destInKernel, ulong_t srcInUser, ulong_t bufSize)
      * - make sure the user buffer lies entirely in memory belonging
      *   to the process
      */
-    TODO("Copy memory from user buffer to kernel buffer");
-    Validate_User_Memory(NULL,0,0); /* delete this; keeps gcc happy */
+    bool val = Validate_User_Memory(g_currentThread->userContext, srcInUser, bufSize);
+    if(val == false){
+        Print("val----1 %d\n", g_currentThread->userContext->size > srcInUser);
+    }
+    KASSERT(val == true);
+    struct User_Context *userContext = g_currentThread->userContext;
+    memcpy(destInKernel, srcInUser + userContext->memory, bufSize);
 }
 
 /*

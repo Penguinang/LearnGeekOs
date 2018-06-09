@@ -321,7 +321,6 @@ static void Setup_Kernel_Thread(
     /* Make stack like exit from a interrupt */
     Push(kthread, userContext->dsSelector);
     Push(kthread, userContext->stackPointerAddr);
-    Print("ds: %08x, stackPointer: %08x\n", userContext->dsSelector, userContext->stackPointerAddr);
     Push(kthread, EFLAGS_IF);
     Push(kthread, userContext->csSelector);
     Push(kthread, userContext->entryAddr);

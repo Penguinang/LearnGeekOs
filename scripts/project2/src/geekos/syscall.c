@@ -46,7 +46,7 @@ static int Sys_Null(struct Interrupt_State* state)
  */
 static int Sys_Exit(struct Interrupt_State* state)
 {
-    TODO("Exit system call");
+    Exit(state->ebx);
 }
 
 /*
@@ -58,7 +58,18 @@ static int Sys_Exit(struct Interrupt_State* state)
  */
 static int Sys_PrintString(struct Interrupt_State* state)
 {
-    TODO("PrintString system call");
+    KASSERT(state != 0);
+    int num = state->ecx;
+    char *chars = state->ebx;
+    KASSERT(chars != 0);
+    char *ker_chars = (char*)Malloc(num*sizeof(char));
+    KASSERT(ker_chars != 0);
+
+    Copy_From_User(ker_chars, chars, num);
+    Put_Buf(ker_chars, num);
+
+    Free(ker_chars);
+    return 0;
 }
 
 /*
@@ -70,7 +81,7 @@ static int Sys_PrintString(struct Interrupt_State* state)
  */
 static int Sys_GetKey(struct Interrupt_State* state)
 {
-    TODO("GetKey system call");
+    return Wait_For_Key();
 }
 
 /*
@@ -93,7 +104,10 @@ static int Sys_SetAttr(struct Interrupt_State* state)
  */
 static int Sys_GetCursor(struct Interrupt_State* state)
 {
-    TODO("GetCursor system call");
+    KASSERT(state != 0);
+    // TODO ebx pointer or value?
+    Get_Cursor(state->ebx, state->ecx);
+    return 0;
 }
 
 /*
@@ -119,7 +133,17 @@ static int Sys_PutCursor(struct Interrupt_State* state)
  */
 static int Sys_Spawn(struct Interrupt_State* state)
 {
-    TODO("Spawn system call");
+    char *name = (char*)Malloc((state->ecx+1) * sizeof(char));
+    Copy_From_User(name, state->ebx, state->ecx);
+    name[state->ecx] = 0;
+    char *command = (char*)Malloc((state->esi+1) * sizeof(char));
+    Copy_From_User(command, state->edx, state->esi);
+    command[state->esi] = 0;
+    struct Kernel_Thread *kthread;
+    Enable_Interrupts();
+    int pid = Spawn(name, command, &kthread);
+    Disable_Interrupts();
+    return pid;    
 }
 
 /*
@@ -131,7 +155,14 @@ static int Sys_Spawn(struct Interrupt_State* state)
  */
 static int Sys_Wait(struct Interrupt_State* state)
 {
-    TODO("Wait system call");
+    struct Kernel_Thread *kthread = Lookup_Thread(state->ebx);
+    if(kthread == 0){
+        return -1;
+    }
+    Enable_Interrupts();
+    int exit_code = Join(kthread);
+    Disable_Interrupts();
+    return exit_code;
 }
 
 /*
