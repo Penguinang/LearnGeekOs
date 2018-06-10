@@ -97,7 +97,6 @@ int Spawn(const char *program, const char *command, struct Kernel_Thread **pThre
      * If all goes well, store the pointer to the new thread in
      * pThread and return 0.  Otherwise, return an error code.
      */
-    // TODO("Spawn a process by reading an executable from a filesystem");
 
     /**
      * Read
@@ -105,26 +104,35 @@ int Spawn(const char *program, const char *command, struct Kernel_Thread **pThre
     char *buffer;
     ulong_t len;
     int read = Read_Fully(program, (void**)&buffer, &len);
-    KASSERT(read == 0);
+    if(read != 0){
+        return ENOTFOUND;
+    }
 
     /**
      * Parse
      */
     struct Exe_Format exe_format;
     int parse = Parse_ELF_Executable(buffer, len, &exe_format);
-    KASSERT(parse == 0);
+    if(parse != 0){
+        Free(buffer);
+        return ENOEXEC;
+    }
 
     /**
      * Load
      */
     struct User_Context *user_context;
     int load = Load_User_Program(buffer, len, &exe_format, command, &user_context);
-    KASSERT(load == 0);
+    Free(buffer);
+    if(load != 0){
+        return load;
+    }
 
     /**
      * Start
      */
-    *pThread = Start_User_Thread(user_context, true);
+    *pThread = Start_User_Thread(user_context, false);
+    KASSERT((*pThread)->refCount == 2);
     return (*pThread)->pid;
 }
 

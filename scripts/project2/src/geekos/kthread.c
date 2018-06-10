@@ -341,14 +341,11 @@ static void Setup_Kernel_Thread(
     Push(kthread, userContext->argBlockAddr);        
     Push(kthread, 0xd1);
     Push(kthread, 0xb0);
-    // 按照原来的顺序压栈时，发现有错误，debugger 显示多了一格（从栈顶开始），原来是不需要sp的值
 
     Push(kthread, userContext->dsSelector);
     Push(kthread, userContext->dsSelector);
     Push(kthread, userContext->dsSelector);
     Push(kthread, userContext->dsSelector);
-
-    // TODO("Create a new thread to execute in user mode");
 }
 
 

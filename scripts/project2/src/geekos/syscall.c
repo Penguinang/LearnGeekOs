@@ -133,12 +133,15 @@ static int Sys_PutCursor(struct Interrupt_State* state)
  */
 static int Sys_Spawn(struct Interrupt_State* state)
 {
+    // File name string
     char *name = (char*)Malloc((state->ecx+1) * sizeof(char));
     Copy_From_User(name, state->ebx, state->ecx);
     name[state->ecx] = 0;
+    // Command name string
     char *command = (char*)Malloc((state->esi+1) * sizeof(char));
     Copy_From_User(command, state->edx, state->esi);
     command[state->esi] = 0;
+
     struct Kernel_Thread *kthread;
     Enable_Interrupts();
     int pid = Spawn(name, command, &kthread);
@@ -159,6 +162,7 @@ static int Sys_Wait(struct Interrupt_State* state)
     if(kthread == 0){
         return -1;
     }
+
     Enable_Interrupts();
     int exit_code = Join(kthread);
     Disable_Interrupts();

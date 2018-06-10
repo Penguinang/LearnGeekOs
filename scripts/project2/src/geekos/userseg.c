@@ -20,6 +20,7 @@
 #include <geekos/kthread.h>
 #include <geekos/argblock.h>
 #include <geekos/user.h>
+#include <geekos/errno.h>
 
 /* ----------------------------------------------------------------------
  * Variables
@@ -113,12 +114,16 @@ int Load_User_Program(char *exeFileData, ulong_t exeFileLength,
      *   address
      */
     *pUserContext = Malloc(sizeof(struct User_Context));
-    KASSERT(*pUserContext != 0);
+    if(*pUserContext == 0){
+        return ENOMEM;
+    }
+    struct User_Context *userContext = *pUserContext;
 
     /**
      * Allocate memory
      * I will put code and data segment first, then stack, and the last argument block
      */
+    // Data and code segment size
     ulong_t maxva = 0;
     for(int i = 0; i<exeFormat->numSegments; i++){
         struct Exe_Segment *segment = &exeFormat->segmentList[i];
@@ -128,60 +133,56 @@ int Load_User_Program(char *exeFileData, ulong_t exeFileLength,
     }
     KASSERT(maxva != 0);
     maxva = Round_Up_To_Page(maxva);
-    
+    // Argument block size
     unsigned int arg_num;
     ulong_t arg_block_size;
     Get_Argument_Block_Size(command, &arg_num, &arg_block_size);
     arg_block_size = Round_Up_To_Page(arg_block_size);
-
+    // Stack segment size
     ulong_t stack_size = DEFAULT_USER_STACK_SIZE;
 
     ulong_t virt_size = maxva + arg_block_size + stack_size;
     ulong_t virt_space = (ulong_t)Malloc(virt_size);
-    KASSERT(virt_space != 0);
+    if(virt_space == 0){
+        Free(*pUserContext);
+        return ENOMEM;
+    }
+
     memset(virt_space, 0, virt_size);
     ulong_t stack_addr = virt_space + maxva;
     ulong_t arg_block_addr = stack_addr + stack_size;
 
-    /* Load segment into memory */
+    /* Load data and code segment into memory */
     for(int i = 0; i<exeFormat->numSegments; i++){
         struct Exe_Segment *segment = &exeFormat->segmentList[i];
         memcpy((void*)(virt_space+segment->startAddress), exeFileData+segment->offsetInFile, segment->lengthInFile);
     }
-    (*pUserContext)->memory = (char*)virt_space;
-    (*pUserContext)->size = virt_size;
+    userContext->memory = (char*)virt_space;
+    userContext->size = virt_size;
     
-    /* LDT */
-    struct Segment_Descriptor *ldt_addr = (*pUserContext)->ldt;
+    /* LDT and selectors */
+    struct Segment_Descriptor *ldt_addr = userContext->ldt;
     struct Segment_Descriptor *ldtDescriptor = Allocate_Segment_Descriptor();
     KASSERT(ldtDescriptor != 0);
-    (*pUserContext)->ldtDescriptor = ldtDescriptor;
+    userContext->ldtDescriptor = ldtDescriptor;
     Init_LDT_Descriptor(ldtDescriptor, ldt_addr, NUM_USER_LDT_ENTRIES);
     // LDT sel rpl is 0 or 3 ?
-    (*pUserContext)->ldtSelector = Selector(0, true, Get_Descriptor_Index(ldtDescriptor));
+    userContext->ldtSelector = Selector(3, true, Get_Descriptor_Index(ldtDescriptor));
 
     Init_Code_Segment_Descriptor(ldt_addr, virt_space, (virt_size/PAGE_SIZE), 3);
-    (*pUserContext)->csSelector = Selector(3, false, 0);
+    userContext->csSelector = Selector(3, false, 0);
     Init_Data_Segment_Descriptor(ldt_addr+1, virt_space, (virt_size/PAGE_SIZE), 3);
-    (*pUserContext)->dsSelector = Selector(3, false, 1);
+    userContext->dsSelector = Selector(3, false, 1);
 
-    // TODO
-    // 1. 从逻辑地址映射到线性地址还没有完成，因此拷贝函数没有完成
-    // 2. 下面第二行的Print函数两个数值输出本应相等却不想等
-    struct Segment_Descriptor *dscp = ldt_addr + 1;
-    // Print("virt space %0lx, addrH %0lx, addrL %0lx\n", virt_space, dscp->baseHigh, dscp->baseLow);
-    // Print("Original base addr %08x, original dscp %016x, in dscp %0lx\n", 
-    //     virt_space, *(unsigned long long*)(dscp), dscp->baseLow);
     /* Addresses */
-    (*pUserContext)->entryAddr = exeFormat->entryAddr;
+    userContext->entryAddr = exeFormat->entryAddr;
     Format_Argument_Block((char*)arg_block_addr, arg_num, maxva + stack_size, command);
-    // Virtual address
-    (*pUserContext)->argBlockAddr = arg_block_addr - virt_space;
-    (*pUserContext)->stackPointerAddr = arg_block_addr - virt_space;
+    // The target addresses are VIRTUAL address (or so-called LOGIC address)
+    userContext->argBlockAddr = arg_block_addr - virt_space;
+    userContext->stackPointerAddr = arg_block_addr - virt_space;
 
-    (*pUserContext)->refCount = 0;
+    userContext->refCount = 0;
     return 0;
-    // TODO("Load a user executable into a user memory space using segmentation");
 }
 
 /*
