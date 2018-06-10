@@ -155,7 +155,8 @@ void Switch_To_User_Context(struct Kernel_Thread* kthread, struct Interrupt_Stat
     // TODO("Switch to a new user address space, if necessary");
     
     KASSERT(kthread != 0);
-    Set_Kernel_Stack_Pointer(kthread->esp);
+    // Set_Kernel_Stack_Pointer(kthread->esp);
+    Set_Kernel_Stack_Pointer(kthread->stackPage + PAGE_SIZE);
     if(kthread->userContext != NULL)
         Switch_To_Address_Space(kthread->userContext);
 }
