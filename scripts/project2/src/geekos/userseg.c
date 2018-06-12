@@ -75,9 +75,9 @@ void Destroy_User_Context(struct User_Context* userContext)
      *   for the process's LDT
      */
     KASSERT(userContext != 0);
+    Free(userContext->ldtDescriptor);
     Free(userContext->memory);
     Free(userContext);
-    // TODO("Destroy a User_Context");
 }
 
 /*
@@ -209,9 +209,7 @@ bool Copy_From_User(void* destInKernel, ulong_t srcInUser, ulong_t bufSize)
      *   to the process
      */
     bool val = Validate_User_Memory(g_currentThread->userContext, srcInUser, bufSize);
-    if(val == false){
-        Print("val----1 %d\n", g_currentThread->userContext->size > srcInUser);
-    }
+
     KASSERT(val == true);
     struct User_Context *userContext = g_currentThread->userContext;
     memcpy(destInKernel, srcInUser + userContext->memory, bufSize);
@@ -234,7 +232,11 @@ bool Copy_To_User(ulong_t destInUser, void* srcInKernel, ulong_t bufSize)
     /*
      * Hints: same as for Copy_From_User()
      */
-    TODO("Copy memory from kernel buffer to user buffer");
+    bool val = Validate_User_Memory(g_currentThread->userContext, destInUser, bufSize);
+
+    KASSERT(val == true);
+    struct User_Context *userContext = g_currentThread->userContext;
+    memcpy(destInUser + userContext->memory, srcInKernel, bufSize);
 }
 
 /*
@@ -256,7 +258,5 @@ void Switch_To_Address_Space(struct User_Context *userContext)
 
     
     Load_LDTR(userContext->ldtSelector);
-    // TODO("Switch to user address space using segmentation/LDT");
-
 }
 

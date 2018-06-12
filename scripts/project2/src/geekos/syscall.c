@@ -106,7 +106,11 @@ static int Sys_GetCursor(struct Interrupt_State* state)
 {
     KASSERT(state != 0);
     // TODO ebx pointer or value?
-    Get_Cursor(state->ebx, state->ecx);
+    // Anwser: ebx is pointer of row, ecx of col, can find in conio.c def_syscall macro
+    int row, col;
+    Get_Cursor(&row, &col);
+    Copy_To_User(state->ebx, &row, sizeof(int));
+    Copy_To_User(state->ecx, &col, sizeof(int));
     return 0;
 }
 
