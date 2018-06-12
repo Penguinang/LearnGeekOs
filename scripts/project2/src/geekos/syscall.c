@@ -46,6 +46,7 @@ static int Sys_Null(struct Interrupt_State* state)
  */
 static int Sys_Exit(struct Interrupt_State* state)
 {
+    KASSERT(state != 0);
     Exit(state->ebx);
 }
 
@@ -92,7 +93,10 @@ static int Sys_GetKey(struct Interrupt_State* state)
  */
 static int Sys_SetAttr(struct Interrupt_State* state)
 {
-    TODO("SetAttr system call");
+    KASSERT(state != 0);
+    Set_Current_Attr(state->ebx);
+    return 0;
+    // TODO("SetAttr system call");
 }
 
 /*
@@ -123,7 +127,8 @@ static int Sys_GetCursor(struct Interrupt_State* state)
  */
 static int Sys_PutCursor(struct Interrupt_State* state)
 {
-    TODO("PutCursor system call");
+    KASSERT(state != 0);
+    return Put_Cursor(state->ebx, state->ecx);
 }
 
 /*
@@ -137,6 +142,7 @@ static int Sys_PutCursor(struct Interrupt_State* state)
  */
 static int Sys_Spawn(struct Interrupt_State* state)
 {
+    KASSERT(state != 0);
     // File name string
     char *name = (char*)Malloc((state->ecx+1) * sizeof(char));
     Copy_From_User(name, state->ebx, state->ecx);
@@ -181,7 +187,8 @@ static int Sys_Wait(struct Interrupt_State* state)
  */
 static int Sys_GetPID(struct Interrupt_State* state)
 {
-    TODO("GetPID system call");
+    return g_currentThread->pid;
+    // TODO("GetPID system call");
 }
 
 
