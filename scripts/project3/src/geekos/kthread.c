@@ -599,8 +599,15 @@ struct Kernel_Thread* Get_Next_Runnable(void)
 {
     struct Kernel_Thread* best = 0;
 
+    for(int i = 0; i<MAX_QUEUE_LEVEL; i++){
+        if(!Is_Thread_Queue_Empty(&s_runQueue[i])){
+            best = Get_Front_Of_Thread_Queue(&s_runQueue[i]);
+            Remove_From_Front_Of_Thread_Queue(&s_runQueue[i]);
+            return best;
+        }
+    }
     /* Find the best thread from the highest-priority run queue */
-    TODO("Find a runnable thread from run queues");
+    // TODO("Find a runnable thread from run queues");
 
 /*
  *    Print("Scheduling %x\n", best);
