@@ -21,6 +21,7 @@
 #include <geekos/argblock.h>
 #include <geekos/user.h>
 #include <geekos/errno.h>
+#include <geekos/semaphore.h>
 
 /* ----------------------------------------------------------------------
  * Variables
@@ -118,6 +119,9 @@ int Load_User_Program(char *exeFileData, ulong_t exeFileLength,
         return ENOMEM;
     }
     struct User_Context *userContext = *pUserContext;
+
+    // Semaphores Array
+    userContext->semaphore_count = 0;
 
     /**
      * Allocate memory

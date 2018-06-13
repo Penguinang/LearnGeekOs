@@ -20,6 +20,7 @@
 #include <geekos/user.h>
 #include <geekos/timer.h>
 #include <geekos/vfs.h>
+#include <geekos/semaphore.h>
 
 /*
  * Null system call.
@@ -46,6 +47,7 @@ static int Sys_Null(struct Interrupt_State* state)
  */
 static int Sys_Exit(struct Interrupt_State* state)
 {
+    KASSERT(state != 0);
     Exit(state->ebx);
 }
 
@@ -92,7 +94,10 @@ static int Sys_GetKey(struct Interrupt_State* state)
  */
 static int Sys_SetAttr(struct Interrupt_State* state)
 {
-    TODO("SetAttr system call");
+    KASSERT(state != 0);
+    Set_Current_Attr(state->ebx);
+    return 0;
+    // TODO("SetAttr system call");
 }
 
 /*
@@ -123,7 +128,8 @@ static int Sys_GetCursor(struct Interrupt_State* state)
  */
 static int Sys_PutCursor(struct Interrupt_State* state)
 {
-    TODO("PutCursor system call");
+    KASSERT(state != 0);
+    return Put_Cursor(state->ebx, state->ecx);
 }
 
 /*
@@ -137,6 +143,8 @@ static int Sys_PutCursor(struct Interrupt_State* state)
  */
 static int Sys_Spawn(struct Interrupt_State* state)
 {
+    KASSERT(state != 0);
+    
     // File name string
     char *name = (char*)Malloc((state->ecx+1) * sizeof(char));
     Copy_From_User(name, state->ebx, state->ecx);
@@ -181,7 +189,8 @@ static int Sys_Wait(struct Interrupt_State* state)
  */
 static int Sys_GetPID(struct Interrupt_State* state)
 {
-    TODO("GetPID system call");
+    return g_currentThread->pid;
+    // TODO("GetPID system call");
 }
 
 /*
@@ -191,9 +200,20 @@ static int Sys_GetPID(struct Interrupt_State* state)
  *   state->ecx - number of ticks in quantum
  * Returns: 0 if successful, -1 otherwise
  */
+extern int g_schedpolicy;
+extern int g_Quantum;
 static int Sys_SetSchedulingPolicy(struct Interrupt_State* state)
 {
-    TODO("SetSchedulingPolicy system call");
+    int policy = state->ebx;
+    int quantum = state->ecx;
+    if(policy == 0 || policy == 1){
+        g_schedpolicy = policy;
+    }
+    else{
+        return -1;
+    }
+    g_Quantum = quantum;
+    // TODO("SetSchedulingPolicy system call");
 }
 
 /*
@@ -218,7 +238,20 @@ static int Sys_GetTimeOfDay(struct Interrupt_State* state)
  */
 static int Sys_CreateSemaphore(struct Interrupt_State* state)
 {
-    TODO("CreateSemaphore system call");
+    int length = state->ecx;
+    char *name = (char*)Malloc(length);
+    int initial = state->edx;
+    if(name == 0){
+        return ENOMEM;
+    }
+    Copy_From_User(name, state->ebx, length);
+    
+    int ret = Create_Semaphore(name, length, initial);
+
+    Free(name);
+
+    return ret;
+    // TODO("CreateSemaphore system call");
 }
 
 /*
@@ -232,6 +265,8 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
  */
 static int Sys_P(struct Interrupt_State* state)
 {
+    int sid = state->ebx;
+    // return p();
     TODO("P (semaphore acquire) system call");
 }
 
@@ -256,7 +291,9 @@ static int Sys_V(struct Interrupt_State* state)
  */
 static int Sys_DestroySemaphore(struct Interrupt_State* state)
 {
-    TODO("DestroySemaphore system call");
+    int sid = state->ebx;
+    return Destroy_Semaphore(sid);
+    // TODO("DestroySemaphore system call");
 }
 
 

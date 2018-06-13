@@ -14,6 +14,7 @@
 #include <geekos/ktypes.h>
 #include <geekos/segment.h>
 #include <geekos/elf.h>
+#include <geekos/semaphore.h>
 
 struct File;
 
@@ -68,9 +69,10 @@ struct User_Context {
      */
     int refCount;
 
-#if 0
-    int *semaphores;
-#endif
+// #if 0
+    int semaphores[MAX_SEMR_COUNT];
+    int semaphore_count;
+// #endif
 };
 
 struct Kernel_Thread;

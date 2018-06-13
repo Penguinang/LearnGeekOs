@@ -595,15 +595,34 @@ struct Kernel_Thread* Get_Current(void)
  * Get the next runnable thread from the run queue.
  * This is the scheduler.
  */
+int g_schedpolicy = 1;
 struct Kernel_Thread* Get_Next_Runnable(void)
 {
     struct Kernel_Thread* best = 0;
 
-    for(int i = 0; i<MAX_QUEUE_LEVEL; i++){
-        if(!Is_Thread_Queue_Empty(&s_runQueue[i])){
-            best = Get_Front_Of_Thread_Queue(&s_runQueue[i]);
-            Remove_From_Front_Of_Thread_Queue(&s_runQueue[i]);
-            return best;
+    // Round-Robin
+    // TODO
+    // Shouldnt use priority
+    if(g_schedpolicy == 0){
+        int best_q;
+        for(int i = 0; i<MAX_QUEUE_LEVEL; i++){
+            struct Kernel_Thread *queue_best = Find_Best(&s_runQueue[i]);
+            if(best == 0 || queue_best->priority > best->priority){
+                best = queue_best;
+                best_q = i;
+            }
+        }
+        Remove_From_Thread_Queue(&s_runQueue[best_q], best);
+        return best;
+    }
+    // MultiLevel feedback
+    else if(g_schedpolicy == 1){
+        for(int i = 0; i<MAX_QUEUE_LEVEL; i++){
+            if(!Is_Thread_Queue_Empty(&s_runQueue[i])){
+                best = Find_Best(&s_runQueue[i]);
+                Remove_From_Thread_Queue(&s_runQueue[i], best);
+                return best;
+            }
         }
     }
     /* Find the best thread from the highest-priority run queue */
